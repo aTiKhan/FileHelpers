@@ -34,6 +34,7 @@ namespace FileHelpers.DataLink
     /// class for Data Base storages.
     /// </summary>
     [EditorBrowsable(EditorBrowsableState.Advanced)]
+    [Obsolete("Datalink feature is outdated and will be rewritten, see https://www.filehelpers.net/mustread/")]
     public abstract class DatabaseStorage : DataStorage
     {
         #region Constructors
@@ -232,7 +233,7 @@ namespace FileHelpers.DataLink
                 if (mConn.State != ConnectionState.Open)
                     mConn.Open();
 
-                string SQL = String.Empty;
+                string SQL = string.Empty;
 
                 trans = InitTransaction(mConn);
 
@@ -251,19 +252,19 @@ namespace FileHelpers.DataLink
                     if (ExecuteInBatch) {
                         if (batchCount >= mExecuteInBatchSize) {
                             ExecuteAndLeaveOpen(SQL);
-                            SQL = String.Empty;
+                            SQL = string.Empty;
                             batchCount = 0;
                         }
                     }
                     else {
                         ExecuteAndLeaveOpen(SQL);
-                        SQL = String.Empty;
+                        SQL = string.Empty;
                     }
                 }
                 if (SQL != null &&
                     SQL.Length != 0) {
                     ExecuteAndLeaveOpen(SQL);
-                    SQL = String.Empty;
+                    SQL = string.Empty;
                 }
 
                 CommitTransaction(trans);
@@ -432,7 +433,7 @@ namespace FileHelpers.DataLink
         }
 
 
-        private string mConnectionString = String.Empty;
+        private string mConnectionString = string.Empty;
 
         /// <summary>
         /// The connection string used for this storage.

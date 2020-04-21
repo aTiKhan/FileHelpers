@@ -3,8 +3,6 @@
 namespace FileHelpers.Tests.Tests.DataLink
 {
     [TestFixture]
-    [Ignore("Fails on linux")]
-    [Category("Excel")]
     public class ExcelStorageNPOITests
     {
         [Test]
@@ -51,6 +49,29 @@ namespace FileHelpers.Tests.Tests.DataLink
             AssertExpectedResults(res, expectedResultCount: 4);
         }
 
+        [Test]
+        public void ReadExcelStorageWithMissingCellsTest()
+        {
+            var res = ReadFromExcelStorage("ExcelWithEmptyCells.xlsx", stopAfterEmptyRows: 4);
+
+            Assert.AreEqual(4, res.Length);
+
+            Assert.AreEqual("AllwaysOnTop", res[0].OrganizationName);
+            Assert.AreEqual("COMPUTERS, HARDWARE", res[1].OrganizationName);
+            Assert.AreEqual(null, res[2].OrganizationName);
+            Assert.AreEqual("SmartSolutions", res[3].OrganizationName);
+
+            Assert.AreEqual("Test 1,", res[0].TestField);
+            Assert.AreEqual("Test, 2", res[1].TestField);
+            Assert.AreEqual(" Test 3", res[2].TestField);
+            Assert.AreEqual(null, res[3].TestField);
+
+            Assert.AreEqual(11, res[0].Id);
+            Assert.AreEqual(null, res[1].Id);
+            Assert.AreEqual(33, res[2].Id);
+            Assert.AreEqual(44, res[3].Id);
+        }
+
         private static void AssertExpectedResults(ExcelXlsType[] res, int expectedResultCount)
         {
             Assert.AreEqual(expectedResultCount, res.Length);
@@ -61,7 +82,8 @@ namespace FileHelpers.Tests.Tests.DataLink
             Assert.AreEqual("Test, 2", res[1].TestField);
 
             // cases where there is no blank row (or blank row was skipped)
-            if (expectedResultCount != 2) {
+            if (expectedResultCount != 2)
+            {
                 Assert.AreEqual("4S Consulting, Inc.", res[2].OrganizationName);
                 Assert.AreEqual("SmartSolutions", res[3].OrganizationName);
                 Assert.AreEqual(" Test 3", res[2].TestField);
@@ -71,21 +93,22 @@ namespace FileHelpers.Tests.Tests.DataLink
 
         private static ExcelXlsType[] ReadFromExcelStorage(string fileName, int stopAfterEmptyRows)
         {
-            var provider = new ExcelNPOIStorage.ExcelNPOIStorage(typeof (ExcelXlsType));
+            var provider = new ExcelNPOIStorage.ExcelNPOIStorage(typeof(ExcelXlsType));
 
             provider.FileName = TestCommon.GetPath("Excel", fileName);
             provider.SheetName = "Sheet1";
-            provider.StartRow = 1;
+            provider.StartRow = 0;
+            provider.StartColumn = 0;
 
             provider.ExcelReadStopAfterEmptyRows = stopAfterEmptyRows;
 
-            return (ExcelXlsType[]) provider.ExtractRecords();
+            return (ExcelXlsType[])provider.ExtractRecords();
         }
 
         [DelimitedRecord("|")]
         public sealed class ExcelXlsType
         {
-            public int Id;
+            public int? Id;
 
             [FieldQuoted('"', QuoteMode.OptionalForBoth)]
             public string OrganizationName;

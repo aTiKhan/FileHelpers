@@ -13,7 +13,7 @@ namespace FileHelpers.DataLink
     /// <remarks>
     /// <para>Uses an <see cref="DataStorage"/> to accomplish this task.</para>
     /// </remarks>
-
+    [Obsolete("Datalink feature is outdated and will be rewritten, see https://www.filehelpers.net/mustread/")]
     public sealed class FileDataLink
     {
         #region "  Constructor  "
@@ -27,7 +27,7 @@ namespace FileHelpers.DataLink
             if (mProvider != null)
                 mHelperEngine = new FileHelperEngine(mProvider.RecordType);
             else
-                throw new ArgumentException("provider can't be null", "provider");
+                throw new ArgumentException("provider can't be null", nameof(provider));
         }
 
         #endregion

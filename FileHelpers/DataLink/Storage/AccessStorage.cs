@@ -1,17 +1,20 @@
 
 using System;
 using System.Data;
-using System.Data.OleDb;
 
 namespace FileHelpers.DataLink
 {
-    /// <summary>
-    /// This is a base class that implements the <see cref="DataStorage"/> for
-    /// Microsoft Access Files.
-    /// </summary>
+#if !NETCOREAPP2_0
+	using System.Data.OleDb;
+
+	/// <summary>
+	/// This is a base class that implements the <see cref="DataStorage"/> for
+	/// Microsoft Access Files.
+	/// </summary>
+    [Obsolete("Datalink feature is outdated and will be rewritten, see https://www.filehelpers.net/mustread/")]
     public sealed class AccessStorage : DatabaseStorage
     {
-        #region "  Constructors  "
+    #region "  Constructors  "
 
         /// <summary>
         /// Creates a new AccessStorage.
@@ -32,9 +35,9 @@ namespace FileHelpers.DataLink
             ConnectionString = DataBaseHelper.GetAccessConnection(AccessFileName, AccessFilePassword);
         }
 
-        #endregion
+	#endregion
 
-        #region "  Create Connection and Command  "
+	#region "  Create Connection and Command  "
 
         /// <summary>
         /// Create the connection object.
@@ -49,9 +52,9 @@ namespace FileHelpers.DataLink
             return new OleDbConnection(ConnectionString);
         }
 
-        #endregion
+	#endregion
 
-        #region "  AccessFileName  "
+	#region "  AccessFileName  "
 
         private string mAccessFile = string.Empty;
 
@@ -68,9 +71,9 @@ namespace FileHelpers.DataLink
             }
         }
 
-        #endregion
+	#endregion
 
-        #region "  AccessFilePassword  "
+	#region "  AccessFilePassword  "
 
         private string mAccessPassword = string.Empty;
 
@@ -87,7 +90,8 @@ namespace FileHelpers.DataLink
             }
         }
 
-        #endregion
+	#endregion
     }
+#endif
 }
 

@@ -49,6 +49,8 @@
     <BootstrapperEnabled>true</BootstrapperEnabled>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <OutputPath>..\Debug\</OutputPath>
@@ -68,7 +70,7 @@
     <DefineConstants>TRACE;DEBUG</DefineConstants>
     <DebugSymbols>true</DebugSymbols>
     <FileAlignment>4096</FileAlignment>
-    <NoWarn>0649,0219</NoWarn>
+    <NoWarn>0649,0219,0618</NoWarn>
     <Optimize>false</Optimize>
     <RegisterForComInterop>false</RegisterForComInterop>
     <RemoveIntegerChecks>false</RemoveIntegerChecks>
@@ -106,21 +108,9 @@
     <DebugType>none</DebugType>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Castle.Core, Version=3.3.0.0, Culture=neutral, PublicKeyToken=407dd0808d44fbdc, processorArchitecture=MSIL">
-      <HintPath>..\packages\Castle.Core.3.3.3\lib\net45\Castle.Core.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="Moq, Version=4.5.10.0, Culture=neutral, PublicKeyToken=69f491c39445e920, processorArchitecture=MSIL">
-      <HintPath>..\packages\Moq.4.5.10\lib\net45\Moq.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="nunit.framework, Version=3.4.0.0, Culture=neutral, PublicKeyToken=2638cd05610744eb, processorArchitecture=MSIL">
-      <HintPath>..\packages\NUnit.3.4.0\lib\net45\nunit.framework.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
@@ -134,9 +124,6 @@
     <Reference Include="System.Net" />
     <Reference Include="System.Xml">
       <Name>System.XML</Name>
-    </Reference>
-    <Reference Include="NFluent">
-      <HintPath>..\packages\NFluent.1.3.1.0\lib\net40\NFluent.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -165,6 +152,7 @@
     <Compile Include="Tests\Common\HeaderText.cs" />
     <Compile Include="Tests\Common\RealLineNumber.cs" />
     <Compile Include="Tests\Converters\DateFormatCulture.cs" />
+    <Compile Include="Tests\Converters\DefaultCultureInfo.cs" />
     <Compile Include="Tests\Dynamic\ClassBuilderTests.cs" />
     <Compile Include="Tests\Common\ConditionalRecords.cs">
       <SubType>Code</SubType>
@@ -325,7 +313,6 @@
     <Compile Include="Tests\DataLink\DataProvidersTests.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Tests\DataLink\ExcelStorageTests.cs" />
     <Compile Include="Tests\DataLink\SqlServerStorage.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -399,9 +386,9 @@
     <Content Include="Data\Excel\ExcelWithNoEmptyRows.xlsx" />
     <Content Include="Data\Excel\ExcelWithOneEmptyRows.xlsx" />
     <Content Include="Data\Excel\ExcelWithTwoEmptyRows.xlsx" />
+    <None Include="Data\Excel\ExcelWithEmptyCells.xlsx" />
     <None Include="FileHelpers.snk" />
     <None Include="Data\Good\EncodingChinese.bin" />
-    <None Include="packages.config" />
     <Compile Include="Tests\Detector\HeaderDetection.cs" />
     <Compile Include="Tests\Detector\MultipleFiles.cs" />
     <Content Include="Data\Detection\CustomersTab2.txt" />
@@ -509,6 +496,7 @@
     <Content Include="Data\Good\DiscardFirstReport.txt" />
     <Content Include="Data\Good\FieldNotEmpty1.txt" />
     <Content Include="Data\Good\InNewLineAfterOptional1.txt" />
+    <Content Include="Data\Good\NumberFormatFrench.txt" />
     <Content Include="Data\Good\OrdersSmallVerticalBar.txt" />
     <Content Include="Data\Good\CustomersFixedWithout1AndHalfFields.txt" />
     <Content Include="Data\Good\CustomersFixedWithout2Fields.txt" />
@@ -647,23 +635,29 @@
       <Project>{BEB0D823-6A7E-47FD-A275-1B3314F8412D}</Project>
       <Name>FileHelpers.ExcelNPOIStorage</Name>
     </ProjectReference>
-    <ProjectReference Include="..\FileHelpers.ExcelStorage\FileHelpers.ExcelStorage.csproj">
-      <Project>{b3f2b976-73d5-49c7-beaa-bf62e233132a}</Project>
-      <Name>FileHelpers.ExcelStorage</Name>
-    </ProjectReference>
     <ProjectReference Include="..\FileHelpers\FileHelpers.csproj">
       <Project>{eb8633ff-ceed-40ee-8d1a-ca1bf5678c42}</Project>
       <Project>{BEB0D823-6A7E-47FD-A275-1B3314F8412D}</Project>
       <Name>FileHelpers.ExcelNPOIStorage</Name>
     </ProjectReference>
-    <ProjectReference Include="..\FileHelpers.ExcelStorage\FileHelpers.ExcelStorage.csproj">
-      <Project>{B3F2B976-73D5-49C7-BEAA-BF62E233132A}</Project>
-      <Name>FileHelpers.ExcelStorage</Name>
-    </ProjectReference>
     <ProjectReference Include="..\FileHelpers\FileHelpers.csproj">
       <Project>{EB8633FF-CEED-40EE-8D1A-CA1BF5678C42}</Project>
       <Name>FileHelpers</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Castle.Core">
+      <Version>3.3.3</Version>
+    </PackageReference>
+    <PackageReference Include="Moq">
+      <Version>4.5.10</Version>
+    </PackageReference>
+    <PackageReference Include="NFluent">
+      <Version>2.5.0</Version>
+    </PackageReference>
+    <PackageReference Include="NUnit">
+      <Version>3.12.0</Version>
+    </PackageReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

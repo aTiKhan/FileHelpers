@@ -14,8 +14,6 @@ namespace FileHelpers.Helpers
         /// </summary>
         internal static readonly string NewLine = Environment.NewLine;
 
-        #region "  ExtractQuotedString  "
-
         /// <summary>
         /// Extract a string from a quoted string, allows for doubling the quotes
         /// for example 'o''clock'
@@ -26,10 +24,8 @@ namespace FileHelpers.Helpers
         /// <returns>Extracted information</returns>
         internal static ExtractedInfo ExtractQuotedString(LineInfo line, char quoteChar, bool allowMultiline)
         {
-            //			if (line.mReader == null)
-            //				throw new BadUsageException("The reader can´t be null");
-
-            if (line.IsEOL()) {
+            if (line.IsEOL())
+            {
                 throw new BadUsageException(
                     "An empty String found. This can not be parsed like a QuotedString try to use SafeExtractQuotedString");
             }
@@ -42,12 +38,15 @@ namespace FileHelpers.Helpers
             bool firstFound = false;
 
             int i = line.mCurrentPos + 1;
-            //bool mustContinue = true;
 
-            while (line.mLineStr != null) {
-                while (i < line.mLineStr.Length) {
-                    if (line.mLineStr[i] == quoteChar) {
-                        if (firstFound) {
+            while (line.mLineStr != null)
+            {
+                while (i < line.mLineStr.Length)
+                {
+                    if (line.mLineStr[i] == quoteChar)
+                    {
+                        if (firstFound)
+                        {
                             // Is an escaped quoted char
                             res.Append(quoteChar);
                             firstFound = false;
@@ -55,8 +54,10 @@ namespace FileHelpers.Helpers
                         else
                             firstFound = true;
                     }
-                    else {
-                        if (firstFound) {
+                    else
+                    {
+                        if (firstFound)
+                        {
                             // This was the end of the string
                             line.mCurrentPos = i;
                             return new ExtractedInfo(res.ToString());
@@ -67,15 +68,17 @@ namespace FileHelpers.Helpers
                     i++;
                 }
 
-
-                if (firstFound) {
+                if (firstFound)
+                {
                     line.mCurrentPos = i;
                     return new ExtractedInfo(res.ToString());
                 }
-                else {
-                    if (allowMultiline == false) {
+                else
+                {
+                    if (allowMultiline == false)
+                    {
                         throw new BadUsageException("The current field has an unclosed quoted string. Complete line: " +
-                                                    res.ToString());
+                                                    res);
                     }
 
                     line.ReadNextLine();
@@ -86,12 +89,8 @@ namespace FileHelpers.Helpers
             }
 
             throw new BadUsageException("The current field has an unclosed quoted string. Complete Filed String: " +
-                                        res.ToString());
+                                        res);
         }
-
-        #endregion
-
-        #region "  CreateQuotedString  "
 
         /// <summary>
         /// Convert a string to a string with quotes around it,
@@ -112,10 +111,6 @@ namespace FileHelpers.Helpers
             sb.Append(escapedString);
             sb.Append(quoteChar);
         }
-
-        #endregion
-
-        #region "  RemoveBlanks  "
 
         /// <summary>
         /// Remove leading blanks and blanks after the plus or minus sign from a string
@@ -143,7 +138,8 @@ namespace FileHelpers.Helpers
             // we are looking for a gap after the sign, if not found then
             // trim off the front of the string and return
             if (source[i] == '+' ||
-                source[i] == '-') {
+                source[i] == '-')
+            {
                 i++;
                 if (!char.IsWhiteSpace(source[i]))
                     return source; //  sign is followed by text so just return it
@@ -163,8 +159,6 @@ namespace FileHelpers.Helpers
             else // No sign, just return string
                 return source;
         }
-
-        #endregion
 
         private static CultureInfo mCulture;
 
@@ -187,7 +181,7 @@ namespace FileHelpers.Helpers
         /// <param name="oldValue">Value to replace</param>
         /// <param name="newValue">value to replace with</param>
         /// <returns>String with all multiple occurrences replaced</returns>
-        internal static string ReplaceRecursive(string original, string oldValue, string newValue)
+        private static string ReplaceRecursive(string original, string oldValue, string newValue)
         {
             const int maxTries = 1000;
 
@@ -196,7 +190,8 @@ namespace FileHelpers.Helpers
             res = original.Replace(oldValue, newValue);
 
             var i = 0;
-            do {
+            do
+            {
                 i++;
                 ante = res;
                 res = ante.Replace(oldValue, newValue);
@@ -221,7 +216,8 @@ namespace FileHelpers.Helpers
                 original[0] != '_')
                 res.Append('_');
 
-            for (int i = 0; i < original.Length; i++) {
+            for (int i = 0; i < original.Length; i++)
+            {
                 char c = original[i];
                 if (char.IsLetterOrDigit(c) ||
                     c == '_')
@@ -248,28 +244,18 @@ namespace FileHelpers.Helpers
         /// <returns>string with values replaced</returns>
         public static string ReplaceIgnoringCase(string original, string oldValue, string newValue)
         {
-            return Replace(original, oldValue, newValue, StringComparison.OrdinalIgnoreCase);
-        }
-
-        /// <summary>
-        /// String replace with a comparison function, eg OridinalIgnoreCase
-        /// </summary>
-        /// <param name="original">Original string</param>
-        /// <param name="oldValue">Value to be replaced</param>
-        /// <param name="newValue">value to replace with</param>
-        /// <param name="comparisionType">Comparison type (enum)</param>
-        /// <returns>String with values replaced</returns>
-        public static string Replace(string original, string oldValue, string newValue, StringComparison comparisionType)
-        {
+            StringComparison comparisionType = StringComparison.OrdinalIgnoreCase;
             string result = original;
 
-            if (!string.IsNullOrEmpty(oldValue)) {
+            if (!string.IsNullOrEmpty(oldValue))
+            {
                 int index = -1;
                 int lastIndex = 0;
 
                 var buffer = new StringBuilder(original.Length);
 
-                while ((index = original.IndexOf(oldValue, index + 1, comparisionType)) >= 0) {
+                while ((index = original.IndexOf(oldValue, index + 1, comparisionType)) >= 0)
+                {
                     buffer.Append(original, lastIndex, index - lastIndex);
                     buffer.Append(newValue);
 
@@ -284,34 +270,13 @@ namespace FileHelpers.Helpers
         }
 
         /// <summary>
-        /// Indicates whether a specified string is null, empty, or consists only of white-space characters.
-        /// </summary>
-        /// <param name="value">The string to test.</param>
-        /// <returns>true if the parameter is null, empty, or consists only of white-space characters.</returns>
-        public static bool IsNullOrWhiteSpace (string value)
-        {
-            if (value == null)
-            {
-                return true;
-            }
-            for (int i = 0; i < value.Length; i++)
-            {
-                if (!char.IsWhiteSpace (value[i]))
-                {
-                    return false;
-                }
-            }
-            return true;
-        }
-
-        /// <summary>
         /// Determines whether the beginning of this string instance matches the specified string ignoring white spaces at the start.
         /// </summary>
         /// <param name="source">source string.</param>
         /// <param name="value">The string to compare.</param>
         /// <param name="comparisonType">string comparison type.</param>
         /// <returns></returns>
-        public static bool StartsWithIgnoringWhiteSpaces (string source, string value, System.StringComparison comparisonType)
+        public static bool StartsWithIgnoringWhiteSpaces(string source, string value, StringComparison comparisonType)
         {
             if (value == null)
             {
@@ -320,17 +285,17 @@ namespace FileHelpers.Helpers
             // find lower bound
             int i = 0;
             int sz = source.Length;
-            while (i < sz && char.IsWhiteSpace (source[i]))
+            while (i < sz && char.IsWhiteSpace(source[i]))
             {
                 i++;
             }
             // adjust upper bound
             sz = sz - i;
             if (sz < value.Length)
-                return false;            
+                return false;
             sz = value.Length;
             // search
-            return source.IndexOf (value, i, sz, comparisonType) == i;
+            return source.IndexOf(value, i, sz, comparisonType) == i;
         }
     }
 }

@@ -121,12 +121,12 @@ namespace FileHelpers
         private bool MustIgnoreLine(string line)
         {
             if (mRecordInfo.IgnoreEmptyLines) {
-                if ((mRecordInfo.IgnoreEmptySpaces && StringHelper.IsNullOrWhiteSpace(line)) ||
+                if ((mRecordInfo.IgnoreEmptySpaces && string.IsNullOrWhiteSpace(line)) ||
                     line.Length == 0)
                     return true;
             }
 
-            if (!String.IsNullOrEmpty(mRecordInfo.CommentMarker)) {
+            if (!string.IsNullOrEmpty(mRecordInfo.CommentMarker)) {
                 if ((mRecordInfo.CommentAnyPlace && StringHelper.StartsWithIgnoringWhiteSpaces(line, mRecordInfo.CommentMarker, StringComparison.Ordinal)) ||
                     line.StartsWith(mRecordInfo.CommentMarker, StringComparison.Ordinal))
                     return true;

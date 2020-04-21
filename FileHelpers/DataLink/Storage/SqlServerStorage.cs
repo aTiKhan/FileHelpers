@@ -1,17 +1,20 @@
 
 using System;
 using System.Data;
-using System.Data.SqlClient;
 
 namespace FileHelpers.DataLink
 {
-    /// <summary>
-    /// This is a base class that implements the <see cref="DataStorage"/> for
-    /// Microsoft SqlServer.
-    /// </summary>
+#if !NETSTANDARD2_0
+	using System.Data.SqlClient;
+
+	/// <summary>
+	/// This is a base class that implements the <see cref="DataStorage"/> for
+	/// Microsoft SqlServer.
+	/// </summary>
+    [Obsolete("Datalink feature is outdated and will be rewritten, see https://www.filehelpers.net/mustread/")]
     public sealed class SqlServerStorage : DatabaseStorage
     {
-        #region "  Constructors  "
+	#region "  Constructors  "
 
         /// <summary>
         /// Create a new instance of the SqlServerStorage based on the record
@@ -63,9 +66,9 @@ namespace FileHelpers.DataLink
             mUserPass = pass;
         }
 
-        #endregion
+	#endregion
 
-        #region "  Create Connection and Command  "
+	#region "  Create Connection and Command  "
 
         /// <summary>Create a connection object to the database</summary>
         /// <returns>SQL server Connection Object.</returns>
@@ -89,9 +92,9 @@ namespace FileHelpers.DataLink
             return new SqlConnection(conString);
         }
 
-        #endregion
+	#endregion
 
-        #region "  ServerName  "
+	#region "  ServerName  "
 
         private string mServerName = string.Empty;
 
@@ -106,9 +109,9 @@ namespace FileHelpers.DataLink
             }
         }
 
-        #endregion
+	#endregion
 
-        #region "  DatabaseName  "
+	#region "  DatabaseName  "
 
         private string mDatabaseName = string.Empty;
 
@@ -123,9 +126,9 @@ namespace FileHelpers.DataLink
             }
         }
 
-        #endregion
+	#endregion
 
-        #region "  UserName  "
+	#region "  UserName  "
 
         private string mUserName = string.Empty;
 
@@ -140,9 +143,9 @@ namespace FileHelpers.DataLink
             }
         }
 
-        #endregion
+	#endregion
 
-        #region "  UserPass  "
+	#region "  UserPass  "
 
         private string mUserPass = string.Empty;
 
@@ -157,9 +160,9 @@ namespace FileHelpers.DataLink
             }
         }
 
-        #endregion
+	#endregion
 
-        #region "  ExecuteInBatch  "
+	#region "  ExecuteInBatch  "
 
         /// <summary>do we get groups of records or singularly</summary>
         protected override bool ExecuteInBatch
@@ -167,7 +170,7 @@ namespace FileHelpers.DataLink
             get { return true; }
         }
 
-        #endregion
+	#endregion
     }
+#endif
 }
-

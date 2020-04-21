@@ -15,6 +15,7 @@ _ReSharper.FileHelpers
 /FileHelpers.Tests/Data/*/~$*
 /FileHelpers.Benchmarks/Release
 /FileHelpers.Tests/Release
+/FileHelpers.Tests/Data/Good/presidents.txt
 /Release
 /FileHelpers.Tests/Data/temp.txt
 /packages
@@ -33,3 +34,4 @@ FileHelpers.userprefs
 /FileHelpers.Analyzer/FileHelpers.Analyzer/FileHelpers.Analyzer.Vsix/obj
 /FileHelpers.Examples/obj
 /FileHelpers.Examples/Release
+/_ReSharper.Caches

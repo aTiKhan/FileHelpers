@@ -25,8 +25,9 @@ namespace FileHelpers
         /// </summary>
         /// <param name="fi">field info structure</param>
         /// <param name="sep">field separator</param>
-        internal DelimitedField(FieldInfo fi, string sep)
-            : base(fi)
+        /// <param name="defaultCultureName">Default culture name used for each properties if no converter is specified otherwise. If null, the default decimal separator (".") will be used.</param>
+        internal DelimitedField(FieldInfo fi, string sep, string defaultCultureName=null)
+            : base(fi,defaultCultureName)
         {
             QuoteChar = '\0';
             QuoteMultiline = MultilineMode.AllowForBoth;
@@ -104,7 +105,7 @@ namespace FileHelpers
                         !line.StartsWith(Separator) &&
                         !line.IsEOL()) {
                         throw new BadUsageException(line,
-                            "The field " + this.FieldInfo.Name + " is quoted but the quoted char: " + quotedStr +
+                            "The field " + FieldInfo.Name + " is quoted but the quoted char: " + quotedStr +
                             " not is just before the separator (You can use [FieldTrim] to avoid this error)");
                     }
                     return res;
@@ -115,19 +116,11 @@ namespace FileHelpers
                         return BasicExtractString(line);
                     else if (line.StartsWithTrim(quotedStr)) {
                         throw new BadUsageException(
-                            string.Format(
-                                "The field '{0}' has spaces before the QuotedChar at line {1}. Use the TrimAttribute to by pass this error. Field String: {2}",
-                                FieldInfo.Name,
-                                line.mReader.LineNumber,
-                                line.CurrentString));
+                            $"The field '{FieldInfo.Name}' has spaces before the QuotedChar at line {line.mReader.LineNumber}. Use the TrimAttribute to by pass this error. Field String: {line.CurrentString}");
                     }
                     else {
                         throw new BadUsageException(
-                            string.Format(
-                                "The field '{0}' does not begin with the QuotedChar at line {1}. You can use FieldQuoted(QuoteMode.OptionalForRead) to allow optional quoted field. Field String: {2}",
-                                FieldInfo.Name,
-                                line.mReader.LineNumber,
-                                line.CurrentString));
+                            $"The field '{FieldInfo.Name}' does not begin with the QuotedChar at line {line.mReader.LineNumber}. You can use FieldQuoted(QuoteMode.OptionalForRead) to allow optional quoted field. Field String: {line.CurrentString}");
                     }
                 }
             }
@@ -146,7 +139,7 @@ namespace FileHelpers
                     string.Format(
                         "Delimiter '{0}' found after the last field '{1}' (the file is wrong or you need to add a field to the record class)",
                         Separator,
-                        this.FieldInfo.Name,
+                        FieldInfo.Name,
                         line.mReader.LineNumber);
 
                 throw new BadUsageException(line.mReader.LineNumber, line.mCurrentPos, msg);
@@ -163,16 +156,14 @@ namespace FileHelpers
 
                         if (IsFirst && line.EmptyFromPos()) {
                             msg =
-                                string.Format(
-                                    "The line {0} is empty. Maybe you need to use the attribute [IgnoreEmptyLines] in your record class.",
-                                    line.mReader.LineNumber);
+                                $"The line {line.mReader.LineNumber} is empty. Maybe you need to use the attribute [IgnoreEmptyLines] in your record class.";
                         }
                         else {
                             msg =
                                 string.Format(
                                     "Delimiter '{0}' not found after field '{1}' (the record has less fields, the delimiter is wrong or the next field must be marked as optional).",
                                     Separator,
-                                    this.FieldInfo.Name,
+                                    FieldInfo.Name,
                                     line.mReader.LineNumber);
                         }
 
@@ -202,7 +193,7 @@ namespace FileHelpers
             if (hasNewLine &&
                 (QuoteMultiline == MultilineMode.AllowForRead ||
                  QuoteMultiline == MultilineMode.NotAllow)) {
-                throw new BadUsageException("One value for the field " + this.FieldInfo.Name +
+                throw new BadUsageException("One value for the field " + FieldInfo.Name +
                                             " has a new line inside. To allow write this value you must add a FieldQuoted attribute with the multiline option in true.");
             }
 

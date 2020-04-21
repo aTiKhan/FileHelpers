@@ -4,14 +4,13 @@ using System.Data;
 using System.Linq;
 using FileHelpers.Events;
 
-//using Container=FileHelpers.Container;
-
 namespace FileHelpers.DataLink
 {
     /// <summary>
     /// Base class for all the Storage classes of the library or the custom
     /// Storage classes.
     /// </summary>
+    [Obsolete("Datalink feature is outdated and will be rewritten, see https://www.filehelpers.net/mustread/")]
     public abstract class DataStorage
     {
         /// <summary>Called to notify progress.</summary>
@@ -93,13 +92,16 @@ namespace FileHelpers.DataLink
         /// <param name="lineNumber">The line when the error occurs.</param>
         /// <param name="ex">The exception thrown, can be null.</param>
         /// <param name="recordLine">The record values</param>
-        protected void AddError(int lineNumber, Exception ex, string recordLine)
+        /// <param name="recordTypeName">The name of the record type</param>
+        protected void AddError(int lineNumber, Exception ex, string recordLine, string recordTypeName)
         {
-            ErrorInfo e = new ErrorInfo();
-            e.mLineNumber = lineNumber;
-//			e.mColumnNumber = colNum;
-            e.mExceptionInfo = ex;
-            e.mRecordString = recordLine;
+            ErrorInfo e = new ErrorInfo
+            {
+                mLineNumber = lineNumber,
+                mExceptionInfo = ex,
+                mRecordString = recordLine,
+                mRecordTypeName = recordTypeName
+            };
 
             mErrorManager.AddError(e);
         }

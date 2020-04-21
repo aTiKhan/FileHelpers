@@ -1,11 +1,10 @@
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.IO;
 using System.Text;
 using FileHelpers.Events;
 using FileHelpers.Options;
-
-//using Container=FileHelpers.Container;
 
 namespace FileHelpers
 {
@@ -20,9 +19,7 @@ namespace FileHelpers
         internal const int DefaultWriteBufferSize = 16 * 1024;
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        internal IRecordInfo RecordInfo { get; private set; }
-
-        //private readonly IRecordInfo mRecordInfo;
+        internal IRecordInfo RecordInfo { get; }
 
         #region "  Constructor  "
 
@@ -31,7 +28,7 @@ namespace FileHelpers
         /// </summary>
         /// <param name="recordType">Class to base engine on</param>
         internal EngineBase(Type recordType)
-            : this(recordType, Encoding.GetEncoding(0)) {}
+            : this(recordType, Encoding.GetEncoding(0)) { }
 
         /// <summary>
         /// Create and engine on type with specified encoding
@@ -43,14 +40,15 @@ namespace FileHelpers
             if (recordType == null)
                 throw new BadUsageException(Messages.Errors.NullRecordClass.Text);
 
-            if (recordType.IsValueType) {
+            if (recordType.IsValueType)
+            {
                 throw new BadUsageException(Messages.Errors.StructRecordClass
                     .RecordType(recordType.Name)
                     .Text);
             }
 
             mRecordType = recordType;
-            RecordInfo = FileHelpers.RecordInfo.Resolve(recordType); // Container.Resolve<IRecordInfo>(recordType);
+            RecordInfo = FileHelpers.RecordInfo.Resolve(recordType);
             mEncoding = encoding;
 
             CreateRecordOptions();
@@ -107,10 +105,11 @@ namespace FileHelpers
             var delimiter = "\t";
 
             if (RecordInfo.IsDelimited)
-                delimiter = ((DelimitedRecordOptions) Options).Delimiter;
+                delimiter = ((DelimitedRecordOptions)Options).Delimiter;
 
             var res = new StringBuilder();
-            for (int i = 0; i < RecordInfo.Fields.Length; i++) {
+            for (int i = 0; i < RecordInfo.Fields.Length; i++)
+            {
                 if (i > 0)
                     res.Append(delimiter);
 
@@ -134,19 +133,8 @@ namespace FileHelpers
             get { return mRecordType; }
         }
 
-        #endregion
-
-        #region "  HeaderText  "
-
-        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        internal string mHeaderText = String.Empty;
-
         /// <summary>The Read Header in the last Read operation. If any.</summary>
-        public string HeaderText
-        {
-            get { return mHeaderText; }
-            set { mHeaderText = value; }
-        }
+        public string HeaderText { get; set; } = string.Empty;
 
         #endregion
 
@@ -154,13 +142,24 @@ namespace FileHelpers
 
         /// <summary>The Read Footer in the last Read operation. If any.</summary>
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        protected string mFooterText = String.Empty;
+        protected string mFooterText = string.Empty;
 
         /// <summary>The Read Footer in the last Read operation. If any.</summary>
         public string FooterText
         {
             get { return mFooterText; }
             set { mFooterText = value; }
+        }
+
+        internal void WriteFooter(TextWriter writer)
+        {
+            if (!string.IsNullOrEmpty(mFooterText))
+            {
+                if (mFooterText.EndsWith(NewLineForWrite))
+                    writer.Write(mFooterText);
+                else
+                    writer.WriteLine(mFooterText);
+            }
         }
 
         #endregion
@@ -230,7 +229,6 @@ namespace FileHelpers
             get { return mErrorManager; }
         }
 
-
         /// <summary>
         /// Indicates the behavior of the engine when it finds an error.
         /// {Shortcut for <seealso cref="FileHelpers.ErrorManager.ErrorMode"/>)
@@ -257,7 +255,6 @@ namespace FileHelpers
 
         #endregion
 
-
         /// <summary>Event handler called to notify progress.</summary>
         public event EventHandler<ProgressEventArgs> Progress;
 
@@ -280,7 +277,6 @@ namespace FileHelpers
 
             Progress(this, e);
         }
-
 
         private void CreateRecordOptions()
         {
@@ -306,10 +302,20 @@ namespace FileHelpers
             return options;
         }
 
-
         /// <summary>
         /// Allows you to change some record layout options at runtime
         /// </summary>
         public RecordOptions Options { get; private set; }
+
+        internal void WriteHeader(TextWriter textWriter)
+        {
+            if (!string.IsNullOrEmpty(HeaderText))
+            {
+                if (HeaderText.EndsWith(NewLineForWrite))
+                    textWriter.Write(HeaderText);
+                else
+                    textWriter.WriteLine(HeaderText);
+            }
+        }
     }
 }
