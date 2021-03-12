@@ -1,3 +1,4 @@
+#if !NETSTANDARD
 using System;
 using System.Diagnostics;
 using System.Xml;
@@ -67,7 +68,7 @@ namespace FileHelpers.Dynamic
         internal override void AddAttributesCode(AttributesBuilder attbs, NetLanguage lang)
         {
             if (mFieldLength <= 0)
-                throw new BadUsageException("The Length of each field must be grater than 0");
+                throw new BadUsageException("The Length of each field must be greater than 0");
             else
                 attbs.AddAttribute("FieldFixedLength(" + mFieldLength.ToString() + ")");
 
@@ -122,3 +123,4 @@ namespace FileHelpers.Dynamic
         }
     }
 }
+#endif

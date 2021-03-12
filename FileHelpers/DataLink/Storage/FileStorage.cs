@@ -1,3 +1,4 @@
+#if !NETSTANDARD
 using System;
 
 namespace FileHelpers.DataLink
@@ -71,7 +72,7 @@ namespace FileHelpers.DataLink
         {
             if (mFileName == null ||
                 mFileName.Length == 0)
-                throw new BadUsageException("You need to set a FileName to the FileStorage Provider.");
+                throw new BadUsageException("You need to set a FileName for the FileStorage Provider.");
 
             mEngine.WriteFile(mFileName, records);
         }
@@ -79,3 +80,4 @@ namespace FileHelpers.DataLink
         #endregion
     }
 }
+#endif
