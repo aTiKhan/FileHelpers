@@ -6,8 +6,8 @@ using System.Data;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
+using FileHelpers.Engines;
 using FileHelpers.Events;
-using FileHelpers.Helpers;
 using FileHelpers.Streams;
 
 namespace FileHelpers
@@ -196,7 +196,7 @@ namespace FileHelpers
                 {
                     for (int i = 0; i < RecordInfo.IgnoreFirst && currentLine != null; i++)
                     {
-                        HeaderText += currentLine + StringHelper.NewLine;
+                        HeaderText += currentLine + Environment.NewLine;
                         currentLine = freader.ReadNextLine();
                         mLineNumber++;
                     }
@@ -240,7 +240,8 @@ namespace FileHelpers
                         }
 
                         BeforeReadEventArgs<T> e = null;
-                        if (MustNotifyRead)
+                        bool mustNotifyReadForRecord = MustNotifyReadForRecord(RecordInfo);
+                        if (mustNotifyReadForRecord)
                         {
                             e = new BeforeReadEventArgs<T>(this, record, currentLine, LineNumber);
                             skip = OnBeforeReadRecord(e);
@@ -252,8 +253,7 @@ namespace FileHelpers
                         {
                             if (RecordInfo.Operations.StringToRecord(record, line, values))
                             {
-
-                                if (MustNotifyRead) // Avoid object creation
+                                if (mustNotifyReadForRecord) // Avoid object creation
                                     skip = OnAfterReadRecord(currentLine, record, e.RecordLineChanged, LineNumber);
 
                                 if (skip == false)
@@ -399,8 +399,6 @@ namespace FileHelpers
 
             WriteHeader(writer);
 
-            string currentLine = null;
-
             int max = maxRecords;
             if (records is IList)
             {
@@ -415,66 +413,12 @@ namespace FileHelpers
 
             int recIndex = 0;
 
-            bool first = true;
             foreach (var rec in records)
             {
                 if (recIndex == maxRecords)
                     break;
 
-                mLineNumber++;
-                try
-                {
-                    if (rec == null)
-                        throw new BadUsageException($"The record at index {recIndex} is null.");
-
-                    if (first)
-                    {
-                        first = false;
-                        if (RecordInfo.RecordType.IsInstanceOfType(rec) == false)
-                        {
-                            throw new BadUsageException("This engine works with records of type " +
-                                                        RecordInfo.RecordType.Name + " and you use records of type " +
-                                                        rec.GetType().Name);
-                        }
-                    }
-
-                    bool skip = false;
-
-                    if (MustNotifyProgress) // Avoid object creation
-                        OnProgress(new ProgressEventArgs(recIndex + 1, max));
-
-                    if (MustNotifyWrite)
-                        skip = OnBeforeWriteRecord(rec, LineNumber);
-
-                    if (skip == false)
-                    {
-                        currentLine = RecordInfo.Operations.RecordToString(rec);
-                        if (MustNotifyWrite)
-                            currentLine = OnAfterWriteRecord(currentLine, rec);
-                        writer.WriteLine(currentLine);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    switch (mErrorManager.ErrorMode)
-                    {
-                        case ErrorMode.ThrowException:
-                            throw;
-                        case ErrorMode.IgnoreAndContinue:
-                            break;
-                        case ErrorMode.SaveAndContinue:
-                            var err = new ErrorInfo
-                            {
-                                mLineNumber = mLineNumber,
-                                mExceptionInfo = ex,
-                                mRecordString = currentLine,
-                                mRecordTypeName = RecordInfo.RecordType.Name
-                            };
-                            mErrorManager.AddError(err);
-                            break;
-                    }
-                }
-
+                WriteRecord(rec, recIndex, max, writer, RecordInfo);
                 recIndex++;
             }
 

@@ -10,7 +10,6 @@ using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using System.Xml;
-using FileHelpers.Helpers;
 
 namespace FileHelpers.Dynamic
 {
@@ -199,7 +198,7 @@ namespace FileHelpers.Dynamic
 			if (cr.Errors.HasErrors)
 			{
 				var error = new StringBuilder();
-				error.Append("Error Compiling Expression: " + StringHelper.NewLine);
+				error.Append("Error Compiling Expression: " + Environment.NewLine);
 				foreach (CompilerError err in cr.Errors)
 					error.AppendFormat("Line {0}: {1}\n", err.Line, err.ErrorText);
 				throw new DynamicCompilationException(error.ToString(), classStr, cr.Errors);
@@ -426,11 +425,9 @@ namespace FileHelpers.Dynamic
 		{
 			className = className.Trim();
 			if (ValidIdentifierValidator.ValidIdentifier(className) == false)
-			{
-				throw new FileHelpersException(Messages.Errors.InvalidIdentifier
-					.Identifier(className)
-					.Text);
-			}
+            {
+                throw new FileHelpersException($"The string '{className}' not is a valid .NET identifier");
+            }
 
 			mClassName = className;
 			AdditionalReferences = new List<Assembly>();
@@ -595,30 +592,31 @@ namespace FileHelpers.Dynamic
 
 			sb.Append(attbs.GetAttributesCode());
 
-			switch (lang)
+            var newLine = Environment.NewLine;
+            switch (lang)
 			{
 				case NetLanguage.VbNet:
 					sb.Append(GetVisibility(lang, mVisibility) + GetSealed(lang) + "Class " + mClassName);
-					sb.Append(StringHelper.NewLine);
+					sb.Append(newLine);
 					break;
 				case NetLanguage.CSharp:
 					sb.Append(GetVisibility(lang, mVisibility) + GetSealed(lang) + "class " + mClassName);
-					sb.Append(StringHelper.NewLine);
+					sb.Append(newLine);
 					sb.Append("{");
 					break;
 			}
 
-			sb.Append(StringHelper.NewLine);
-			sb.Append(StringHelper.NewLine);
+			sb.Append(newLine);
+			sb.Append(newLine);
 
 			foreach (FieldBuilder field in mFields)
 			{
 				sb.Append(field.GetFieldCode(lang));
-				sb.Append(StringHelper.NewLine);
+				sb.Append(newLine);
 			}
 
 
-			sb.Append(StringHelper.NewLine);
+			sb.Append(newLine);
 
 			switch (lang)
 			{
@@ -638,22 +636,18 @@ namespace FileHelpers.Dynamic
 		private void ValidateClass()
 		{
 			if (ClassName.Trim().Length == 0)
-				throw new FileHelpersException(Messages.Errors.EmptyClassName.Text);
+				throw new FileHelpersException("The ClassName can't be empty");
 
 			for (int i = 0; i < mFields.Count; i++)
 			{
 				if (((FieldBuilder)mFields[i]).FieldName.Trim().Length == 0)
 				{
-					throw new FileHelpersException(Messages.Errors.EmptyFieldName
-						.Position((i + 1).ToString())
-						.Text);
-				}
+					throw new FileHelpersException($"The {i + 1}th field name can't be empty");
+                }
 
 				if (((FieldBuilder)mFields[i]).FieldType.Trim().Length == 0)
 				{
-					throw new FileHelpersException(Messages.Errors.EmptyFieldType
-						.Position((i + 1).ToString())
-						.Text);
+					throw new FileHelpersException($"The {i + 1}th field type can't be empty");
 				}
 			}
 		}
@@ -867,23 +861,24 @@ namespace FileHelpers.Dynamic
 			if (mNamespace == "")
 				return;
 
-			switch (lang)
+            var newLine = Environment.NewLine;
+            switch (lang)
 			{
 				case NetLanguage.CSharp:
 					sb.Append("namespace ");
 					sb.Append(mNamespace);
-					sb.Append(StringHelper.NewLine);
+					sb.Append(newLine);
 					sb.Append("{");
 					break;
 
 				case NetLanguage.VbNet:
 					sb.Append("Namespace ");
 					sb.Append(mNamespace);
-					sb.Append(StringHelper.NewLine);
+					sb.Append(newLine);
 					break;
 			}
 
-			sb.Append(StringHelper.NewLine);
+			sb.Append(newLine);
 		}
 
 		/// <summary>
@@ -896,7 +891,7 @@ namespace FileHelpers.Dynamic
 			if (mNamespace == "")
 				return;
 
-			sb.Append(StringHelper.NewLine);
+			sb.Append(Environment.NewLine);
 
 			switch (lang)
 			{

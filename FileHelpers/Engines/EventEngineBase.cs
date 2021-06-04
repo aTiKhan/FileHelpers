@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using System.IO;
 using System.Text;
 using FileHelpers.Events;
 
@@ -63,6 +64,7 @@ namespace FileHelpers
         /// <summary>
         /// Check whether we need to notify the read to anyone
         /// </summary>
+        [Obsolete("Caution: It checks the property RecordInfo, which might not be updated in a multi record scenario.")]
         protected bool MustNotifyRead
         {
             get
@@ -74,18 +76,24 @@ namespace FileHelpers
         }
 
         /// <summary>
-        /// Determine whether we have to run notify write on every iteration
+        /// Determine whether we have to run notify write on every iteration.
         /// </summary>
-        protected bool MustNotifyWrite
+        [Obsolete("Caution: It checks the property RecordInfo, which might not be updated in a multi record scenario.")]
+        protected bool MustNotifyWrite => MustNotifyWriteForRecord(RecordInfo);
+
+        private bool MustNotifyWriteForRecord(IRecordInfo rec)
         {
-            get
-            {
-                return BeforeWriteRecord != null ||
-                       AfterWriteRecord != null ||
-                       RecordInfo.NotifyWrite;
-            }
+            return BeforeWriteRecord != null ||
+                   AfterWriteRecord != null ||
+                   rec.NotifyWrite;
         }
 
+        internal bool MustNotifyReadForRecord(IRecordInfo rec)
+        {
+            return BeforeReadRecord != null ||
+                   AfterReadRecord != null ||
+                   rec.NotifyRead;
+        }
 
         /// <summary>
         /// Provide a hook to preprocess a record
@@ -163,6 +171,109 @@ namespace FileHelpers
             return e.RecordLine;
         }
 
+        internal void WriteRecord(T record, int recordIndex, int totalRecord, TextWriter textWriter, IRecordInfo info)
+        {
+            string currentLine = null;
 
+            try
+            {
+                if (record == null)
+                    throw new BadUsageException("The record at index " + recordIndex + " is null.");
+
+                mLineNumber++;
+                mTotalRecords++;
+
+                if (MustNotifyProgress) // Avoid object creation
+                    OnProgress(new ProgressEventArgs(recordIndex + 1, totalRecord));
+
+                if (info == null)
+                {
+                    throw new BadUsageException("A record is of type '" + record.GetType().Name +
+                                                "' and the engine doesn't handle this type. You can add it to the constructor.");
+                }
+
+                if (info.RecordType.IsInstanceOfType(record) == false)
+                {
+                    throw new BadUsageException("This engine works with records of type " +
+                                                info.RecordType.Name + " and you use records of type " +
+                                                record.GetType().Name);
+                }
+
+                bool skip = false;
+                bool mustNotifyWriteForRecord = MustNotifyWriteForRecord(info);
+                if (mustNotifyWriteForRecord)
+                {
+                    skip = OnBeforeWriteRecord(record, LineNumber);
+                }
+
+                if (skip == false)
+                {
+                    currentLine = info.Operations.RecordToString(record);
+
+                    if (mustNotifyWriteForRecord)
+                    {
+                        currentLine = OnAfterWriteRecord(currentLine, record);
+                    }
+                    textWriter.WriteLine(currentLine);
+                }
+            }
+            catch (Exception ex)
+            {
+                switch (mErrorManager.ErrorMode)
+                {
+                    case ErrorMode.ThrowException:
+                        throw;
+                    case ErrorMode.IgnoreAndContinue:
+                        break;
+                    case ErrorMode.SaveAndContinue:
+                        var err = new ErrorInfo
+                        {
+                            mLineNumber = mLineNumber,
+                            mExceptionInfo = ex,
+                            mRecordString = currentLine,
+                            mRecordTypeName = RecordInfo.RecordType.Name
+                        };
+                        mErrorManager.AddError(err);
+                        break;
+                }
+            }
+        }
+
+        internal object ReadRecord(
+            IRecordInfo recordInfo,
+            int currentRecord,
+            LineInfo line)
+        {
+            T record = (T)recordInfo.Operations.CreateRecordHandler();
+
+            if (MustNotifyProgress) // Avoid object creation
+                OnProgress(new ProgressEventArgs(currentRecord, -1));
+
+            var skip = false;
+            BeforeReadEventArgs<T> e = null;
+            bool notifyRead = MustNotifyReadForRecord(recordInfo);
+            if (notifyRead)
+            {
+                e = new BeforeReadEventArgs<T>(this, record, line.mLineStr, LineNumber);
+                skip = OnBeforeReadRecord(e);
+                if (e.RecordLineChanged)
+                    line.ReLoad(e.RecordLine);
+            }
+
+            if (skip == false)
+            {
+                var values = new object[recordInfo.FieldCount];
+                if (recordInfo.Operations.StringToRecord(record, line, values))
+                {
+                    if (notifyRead)
+                        skip = OnAfterReadRecord(line.mLineStr, record, e.RecordLineChanged, LineNumber);
+
+                    if (skip == false)
+                        return record;
+                }
+            }
+
+            return null;
+        }
     }
 }
